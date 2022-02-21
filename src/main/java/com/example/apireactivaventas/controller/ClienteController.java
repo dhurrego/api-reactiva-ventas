@@ -72,7 +72,7 @@ public class ClienteController {
                     bd.setNombres(cl.getNombres());
                     bd.setApellidos(cl.getApellidos());
                     bd.setFechaNac(cl.getFechaNac());
-                    bd.setUrlFoto(cl.getUrlFoto());
+                    bd.setUrlFoto(bd.getUrlFoto());
                     return bd;
                 })
                 .flatMap(service::modificar)
