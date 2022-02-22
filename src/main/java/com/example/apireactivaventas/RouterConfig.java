@@ -1,6 +1,7 @@
 package com.example.apireactivaventas;
 
 import com.example.apireactivaventas.handler.ClienteHandler;
+import com.example.apireactivaventas.handler.FacturaHandler;
 import com.example.apireactivaventas.handler.PlatoHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,5 +33,14 @@ public class RouterConfig {
                 .andRoute(POST("/v2/clientes"), handler::registrar)
                 .andRoute(PUT("/v2/clientes/{id}"), handler::modificar)
                 .andRoute(DELETE("/v2/clientes/{id}"), handler::eliminar);
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> rutasFacturas(FacturaHandler handler) {
+        return route(GET("/v2/facturas"), handler::listar)
+                .andRoute(GET("/v2/facturas/{id}"), handler::listarPorId)
+                .andRoute(POST("/v2/facturas"), handler::registrar)
+                .andRoute(PUT("/v2/facturas/{id}"), handler::modificar)
+                .andRoute(DELETE("/v2/facturas/{id}"), handler::eliminar);
     }
 }
