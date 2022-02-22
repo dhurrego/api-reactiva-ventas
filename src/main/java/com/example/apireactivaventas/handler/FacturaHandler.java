@@ -2,6 +2,7 @@ package com.example.apireactivaventas.handler;
 
 import com.example.apireactivaventas.model.Factura;
 import com.example.apireactivaventas.service.IFacturaService;
+import com.example.apireactivaventas.validators.RequestValidators;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,9 @@ public class FacturaHandler {
 
     @Autowired
     private IFacturaService service;
+
+    @Autowired
+    private RequestValidators validadorGeneral;
 
     public Mono<ServerResponse> listar(ServerRequest req) {
         return ServerResponse
@@ -38,7 +42,8 @@ public class FacturaHandler {
     public Mono<ServerResponse> registrar(ServerRequest req) {
         Mono<Factura> monoFactura = req.bodyToMono(Factura.class);
         return monoFactura
-                .flatMap( f -> service.registrar(f))
+                .flatMap(validadorGeneral::validate)
+                .flatMap(service::registrar)
                 .flatMap( f -> ServerResponse
                                 .created(URI.create(req.uri().toString().concat(f.getId())))
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -58,6 +63,7 @@ public class FacturaHandler {
                     bd.setObservacion(fa.getObservacion());
                     return bd;
                 })
+                .flatMap(validadorGeneral::validate)
                 .flatMap(service::modificar)
                 .flatMap( f -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)

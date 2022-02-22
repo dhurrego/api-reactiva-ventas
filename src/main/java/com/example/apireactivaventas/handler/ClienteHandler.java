@@ -2,6 +2,7 @@ package com.example.apireactivaventas.handler;
 
 import com.example.apireactivaventas.model.Cliente;
 import com.example.apireactivaventas.service.IClienteService;
+import com.example.apireactivaventas.validators.RequestValidators;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,9 @@ public class ClienteHandler {
 
     @Autowired
     private IClienteService service;
+
+    @Autowired
+    private RequestValidators validadorGeneral;
 
     public Mono<ServerResponse> listar(ServerRequest req) {
         return ServerResponse
@@ -38,6 +42,7 @@ public class ClienteHandler {
     public Mono<ServerResponse> registrar(ServerRequest req) {
         Mono<Cliente> monoCliente = req.bodyToMono(Cliente.class);
         return monoCliente
+                .flatMap(validadorGeneral::validate)
                 .flatMap( c -> service.registrar(c))
                 .flatMap( c -> ServerResponse
                                 .created(URI.create(req.uri().toString().concat(c.getId())))
@@ -58,6 +63,7 @@ public class ClienteHandler {
                     bd.setUrlFoto(bd.getUrlFoto());
                     return bd;
                 })
+                .flatMap(validadorGeneral::validate)
                 .flatMap(service::modificar)
                 .flatMap( c -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
