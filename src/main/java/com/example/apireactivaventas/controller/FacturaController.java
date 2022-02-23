@@ -115,4 +115,13 @@ public class FacturaController {
                 );
     }
 
+    @GetMapping("/generarReporte/{id}")
+    public Mono<ResponseEntity<byte[]>> generarReporte(@PathVariable("id") String id) {
+        return service.generarReporte(id)
+                .map(bytes -> ResponseEntity.ok()
+                                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                                .body(bytes)
+                ).defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
 }
