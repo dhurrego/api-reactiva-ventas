@@ -1,5 +1,6 @@
 package com.example.apireactivaventas.controller;
 
+import com.example.apireactivaventas.dto.FiltroDTO;
 import com.example.apireactivaventas.model.Factura;
 import com.example.apireactivaventas.pagination.PageSupport;
 import com.example.apireactivaventas.service.IFacturaService;
@@ -102,6 +103,16 @@ public class FacturaController {
 
         return service.listarPorId(id)
                 .zipWith(link1, (f, lk) -> EntityModel.of(f, lk));
+    }
+
+    @PostMapping("/buscar")
+    public Mono<ResponseEntity<Flux<Factura>>> buscar(@RequestBody FiltroDTO filtroDTO) {
+        return Mono.just(
+                ResponseEntity
+                    .ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(service.obtenerFacturasPorFiltro(filtroDTO))
+                );
     }
 
 }
