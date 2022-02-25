@@ -115,7 +115,7 @@ public class FacturaController {
                 );
     }
 
-    @GetMapping("/generarReporte/{id}")
+    @GetMapping("/generar-reporte/{id}")
     public Mono<ResponseEntity<byte[]>> generarReporte(@PathVariable("id") String id) {
         return service.generarReporte(id)
                 .map(bytes -> ResponseEntity.ok()
