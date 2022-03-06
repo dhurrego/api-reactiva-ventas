@@ -3,6 +3,8 @@ package com.example.apireactivaventas.controller;
 import com.example.apireactivaventas.model.Plato;
 import com.example.apireactivaventas.pagination.PageSupport;
 import com.example.apireactivaventas.service.IPlatoService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +17,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import javax.validation.Valid;
 import java.net.URI;
@@ -26,15 +29,24 @@ import static org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.met
 @RequestMapping("/platos")
 public class PlatoController {
 
+    private static final Logger log = LoggerFactory.getLogger((PlatoController.class));
+
     @Autowired
     private IPlatoService service;
 
     @GetMapping
     public Mono<ResponseEntity<Flux<Plato>>> listar() {
+
         return Mono.just(ResponseEntity
                     .ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.listar()));
+                    .body(service.listar()
+                            .parallel()
+                            .runOn(Schedulers.parallel())
+                            .groups()
+                            .flatMap( gf -> gf)
+                    )
+        );
     }
 
     @GetMapping("/{id}")

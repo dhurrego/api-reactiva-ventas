@@ -1,7 +1,8 @@
 package com.example.apireactivaventas.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -11,7 +12,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Data
+@Getter
+@Setter
 @Document(collection = "platos")
 public class Plato {
 
@@ -31,4 +33,11 @@ public class Plato {
     @NotNull(message = "El estado es obligatorio")
     @Field(name = "estado")
     private Boolean estado;
+
+    @Override
+    public String toString() {
+        return "Plato{" +
+                "id='" + id + '\'' +
+                '}';
+    }
 }
