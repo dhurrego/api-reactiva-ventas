@@ -5,3 +5,8 @@ spring:
       uri: mongodb://localhost:27017/meseroapp
   banner:
     location: banner.txt
+
+#https://www.allkeysgenerator.com/Random/Security-Encryption-Key-Generator.aspx
+jjwt:
+  secret: 6v9y$B&E)H@McQfTjWnZq4t7w!z%C*F-JaNdRgUkXp2s5u8x/A?D(G+KbPeShVmY
+  expiration: 2800

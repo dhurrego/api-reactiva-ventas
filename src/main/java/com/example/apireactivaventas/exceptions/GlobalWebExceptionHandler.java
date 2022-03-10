@@ -13,11 +13,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 @Order(-1)
@@ -36,21 +35,15 @@ public class GlobalWebExceptionHandler extends AbstractErrorWebExceptionHandler 
 
     private Mono<ServerResponse> renderErrorResponse(ServerRequest request) {
         Map<String, Object> errorGeneral = getErrorAttributes(request, ErrorAttributeOptions.defaults());
-        Map<String, Object> mapException = new HashMap<>();
-        final String MESSAGE_KEY = "message";
+        BussinessError errorResponse = new BussinessError();
 
         HttpStatus httpStatus;
         String statusCode = String.valueOf(errorGeneral.get("status"));
 
         switch (statusCode) {
-            case "500":
-                mapException.put("code", "500");
-                mapException.put(MESSAGE_KEY, "Error general del backend");
-                httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-                break;
             case "400":
                 try {
-                    mapException.put("code", "400");
+                    errorResponse.setCode("400");
                     String mensaje;
                     Throwable error = getError(request);
                     if (error instanceof WebExchangeBindException) {
@@ -61,29 +54,46 @@ public class GlobalWebExceptionHandler extends AbstractErrorWebExceptionHandler 
                     } else {
                         mensaje = "Petición incorrecta";
                     }
-                    mapException.put(MESSAGE_KEY, mensaje);
+                    errorResponse.setMessage(mensaje);
                     httpStatus = HttpStatus.BAD_REQUEST;
                 } catch (Exception e) {
-                    mapException.put("code", "500");
-                    mapException.put(MESSAGE_KEY, "Error general del backend");
+                    errorResponse.setCode("500");
+                    errorResponse.setMessage("Error general del backend");
                     httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
                 }
 
                 break;
             case "406":
-                mapException.put("code", "406");
-                mapException.put(MESSAGE_KEY, "Archivo no subido correctamente");
+                errorResponse.setCode("406");
+                errorResponse.setMessage("Archivo no subido correctamente");
                 httpStatus = HttpStatus.NOT_ACCEPTABLE;
                 break;
+            case "401":
+                errorResponse.setCode("401");
+                String mensajeNoAutorizado;
+                Throwable errorNoAutorizado = getError(request);
+                if (errorNoAutorizado instanceof ResponseStatusException) {
+                    mensajeNoAutorizado = ((ResponseStatusException) errorNoAutorizado).getReason();
+                } else {
+                    mensajeNoAutorizado = "No autorizado";
+                }
+                errorResponse.setMessage(mensajeNoAutorizado);
+                httpStatus = HttpStatus.UNAUTHORIZED;
+                break;
+            case "403":
+                errorResponse.setCode("403");
+                errorResponse.setMessage("Acceso denegado");
+                httpStatus = HttpStatus.FORBIDDEN;
+                break;
             default:
-                mapException.put("code", "900");
-                mapException.put(MESSAGE_KEY, errorGeneral.get("error"));
-                httpStatus = HttpStatus.CONFLICT;
+                errorResponse.setCode("500");
+                errorResponse.setMessage("Error general del backend");
+                httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
                 break;
         }
 
         return ServerResponse.status(httpStatus)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(mapException));
+                .body(BodyInserters.fromValue(errorResponse));
     }
 }
